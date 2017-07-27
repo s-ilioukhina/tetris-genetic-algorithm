@@ -1,18 +1,32 @@
 import math
 import random
+import csv
+import sys
 import cProfile
 
 from strategy import Strategy
 
 class StrategySet:
-	def __init__(self, functions, size=100):
+	def __init__(self, functions, input, size=100):
 		assert(size>=2)
 		self.functions = functions
 		self.size = size
 		self.strategies = []
-		for _ in range(size):
-			
-			self.strategies.append(Strategy.generateRandomStrategy(functions))
+
+		if input:
+			with open(input, 'r') as inputWeights:
+				reader = csv.reader(inputWeights)
+				for row in reader:
+					weights = list(map(float,row))
+
+					if len(functions) != len(weights):
+						sys.exit("input file weight list is not the same length as the functions list used")
+						
+					self.strategies.append(Strategy(functions, weights))
+			self.size = len(self.strategies)
+		else:
+			for _ in range(size):
+				self.strategies.append(Strategy.generateRandomStrategy(functions))
 
 	def nextGeneration(self, tetronimoes):
 		scores = [(strategy, strategy.score(tetronimoes)) for strategy in self.strategies]
@@ -58,10 +72,11 @@ class StrategySet:
 			if i != 0 and self.strategies[i-1].weights == self.strategies[i]:
 				self.strategies[i-1] = generateRandomStrategy(self.functions)
 
-		return scores[0], sum(score for (_, score) in scores)/len(scores)
+		return scores, sum(score for (_, score) in scores)/len(scores)
 
 
-	def iterateGenerations(self, tetronimoes, generations=20):
+	def iterateGenerations(self, tetronimoes, generations=1):
 		for _ in range(generations):
 			result = self.nextGeneration(tetronimoes)
-			print(result)
+			print("Strategy(", result[0][0], "), average:", result[1])
+		return result

@@ -40,7 +40,7 @@ class Strategy:
 		self.weights = weights
 
 	def __repr__(self):
-		return "Strategy({0})".format(",".join(map(str, self.weights)))
+		return "{0}".format(",".join(map(str, self.weights)))
 
 	def chooseMove(self, grid, tetronimo):
 		bestMove = (None, -10e10)

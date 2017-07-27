@@ -1,4 +1,12 @@
 import cProfile
+import sys
+import argparse
+
+import csv
+import os
+import os.path
+
+from time import gmtime, strftime
 
 from strategySet import StrategySet
 
@@ -64,8 +72,35 @@ def main():
 	zBlock = [[0,0], [0,1], [1,1], [1,2]]
 	tetronimoes = [iBlock, tBlock, jBlock, lBlock, oBlock, sBlock, zBlock]
 
-	s = StrategySet([sumOfFullTiles, averageSurroundingEmptyTiles, largestNumberOfTransitions, totalEmptyTilesAlone])
-	s.iterateGenerations(tetronimoes)
+	parser = argparse.ArgumentParser(description='create an AI that plays tetris.')
+
+	parser.add_argument(
+		"-o",
+		"--output_dir",
+		default="..",
+		help="folder where to store the weights of the final generation")
+	parser.add_argument(
+		"-i",
+		"--input",
+		help="optional file containing the weights of the starting generation")
+
+	args = parser.parse_args()
+
+	if args.input and os.path.isfile(args.input):
+		s = StrategySet([sumOfFullTiles, averageSurroundingEmptyTiles, largestNumberOfTransitions, totalEmptyTilesAlone], args.input)
+	else:
+		s = StrategySet([sumOfFullTiles, averageSurroundingEmptyTiles, largestNumberOfTransitions, totalEmptyTilesAlone], None)
+
+	finalGeneration = s.iterateGenerations(tetronimoes)
+
+	filename = 'tetris_' + strftime("%Y_%m_%d_%H_%M", gmtime()) + ".csv"
+	outputFile = os.path.join(args.output_dir, filename)
+
+	print("printing to " + outputFile)
+	with open (outputFile, 'w', newline='') as outputFile:
+		writer = csv.writer(outputFile)
+		for strategy in finalGeneration[0]:
+			writer.writerow(strategy[0].weights)
 
 if __name__ == '__main__':
 	main()
