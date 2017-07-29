@@ -1,8 +1,7 @@
 import random
-import cProfile
 from copy import deepcopy
 
-GRIDSIZE = 10
+GRIDSIZE = 5
 
 def isValidTetronimoPlacement(grid, tetronimo, x, y):
 	for (dx, dy) in tetronimo:

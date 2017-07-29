@@ -2,12 +2,11 @@ import math
 import random
 import csv
 import sys
-import cProfile
 
 from strategy import Strategy
 
 class StrategySet:
-	def __init__(self, functions, input, size=100):
+	def __init__(self, functions, input, size=20):
 		assert(size>=2)
 		self.functions = functions
 		self.size = size

@@ -1,9 +1,13 @@
+##
+## Currently this game is implemented as 1010 or TenTrix, where instead of
+## the tetronimoes moving down the screen, they can be placed anywhere on
+## the grid.
+##
+
 import cProfile
-import sys
 import argparse
 
 import csv
-import os
 import os.path
 
 from time import gmtime, strftime
@@ -61,6 +65,63 @@ def totalEmptyTilesAlone(grid):
 					aloneTiles += 1
 	return aloneTiles
 
+def totalEmptyTilesSurroundedByEmpty(grid):
+	aloneTiles = 0
+	for x in range(len(grid)):
+		for y in range(len(grid[x])):
+			if grid[x][y] == 0:
+				pointSum = 0
+				ddx = [0, 0, 1, -1, 1, 1, -1, -1]
+				ddy = [1, -1, 0, 0, 1, -1, 1, -1]
+				for (dx, dy) in zip(ddx, ddy):
+					if isWithinGrid(grid, x+dx, y+dy) and grid[x+dx][y+dy] != 0:
+						pointSum += 1
+				if pointSum == 0:
+					aloneTiles += 1
+	return aloneTiles
+
+def groupsOfFour(grid):
+	groups = 0
+	x=y=0
+	while x+1 < len(grid):
+		while(y+1 < len(grid[x])):
+			squareSum = 0
+			ddx = [0, 0, 1, 1]
+			ddy = [0, 1, 0, 1]
+			for (dx, dy) in zip(ddx, ddy):
+				if grid[x+dx][y+dy] == 0:
+					squareSum += 1
+			if squareSum == 0:
+				groups += 1
+			y += 2
+		x += 2
+	return groups
+
+def emptyRowsAndColumns(grid):
+	emptyLine = 0
+	for rown in range(len(grid)):
+		if sum(grid[rown]) == 0:
+			emptyLine += 1
+
+	for coln in range(len(grid[0])):
+		if sum(grid[i][coln] for i in range(len(grid))) == 0:
+			emptyLine += 1
+	return emptyLine
+
+def longestDiagonal(grid):
+	longest = 0
+	for x in range(len(grid)):
+		for y in range(len(grid[x])):
+			length = 0
+			dx=dy=0
+			while isWithinGrid(grid, x+dx, y+dy) and grid[x+dx][y+dy] == 0:
+				length += 1
+				dx += 1
+				dy += 1
+			if length > longest:
+				longest = length
+	return longest
+
 
 def main():
 	iBlock = [[0,0], [0,1], [0,2], [0,3]]
@@ -85,11 +146,12 @@ def main():
 		help="optional file containing the weights of the starting generation")
 
 	args = parser.parse_args()
+	functions = [sumOfFullTiles, averageSurroundingEmptyTiles, largestNumberOfTransitions, totalEmptyTilesAlone, totalEmptyTilesSurroundedByEmpty, groupsOfFour, emptyRowsAndColumns, longestDiagonal]
 
 	if args.input and os.path.isfile(args.input):
-		s = StrategySet([sumOfFullTiles, averageSurroundingEmptyTiles, largestNumberOfTransitions, totalEmptyTilesAlone], args.input)
+		s = StrategySet(functions, args.input)
 	else:
-		s = StrategySet([sumOfFullTiles, averageSurroundingEmptyTiles, largestNumberOfTransitions, totalEmptyTilesAlone], None)
+		s = StrategySet(functions, None)
 
 	finalGeneration = s.iterateGenerations(tetronimoes)
 
