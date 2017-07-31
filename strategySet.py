@@ -6,7 +6,7 @@ import sys
 from strategy import Strategy
 
 class StrategySet:
-	def __init__(self, functions, input, size=20):
+	def __init__(self, functions, input, size=100):
 		assert(size>=2)
 		self.functions = functions
 		self.size = size
